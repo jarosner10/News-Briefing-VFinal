@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Brief — by Jesse Rosner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d0b;--surface:#141410;--card:#1c1c18;
+  --border:rgba(255,255,255,0.07);--border-h:rgba(255,255,255,0.14);
+  --text:#e8e4d8;--muted:#6b6860;--faint:#252520;
+  --accent:#c8401a;--gold:#c9a84c;--green:#4a8f6e;
+  --l-n:#7a8c6e;--l-l:#4a8fa3;--l-r:#b85c38;--l-f:#8a7ab8;--l-i:#6b8f8a;
+  --sb:272px;--top:54px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-weight:300;display:flex;flex-direction:column;}
+
+/* ── TOPBAR ── */
+.topbar{height:var(--top);display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border);flex-shrink:0;gap:12px;z-index:50;}
+.logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;letter-spacing:.3px;white-space:nowrap;}
+.logo span{color:var(--gold);}
+.topbar-center{display:flex;flex-direction:column;align-items:center;line-height:1.2;}
+.topbar-date{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+.topbar-byline{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--muted);letter-spacing:.5px;}
+.key-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.key-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;display:none;}
+.key-input{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface);border:1px solid var(--border-h);border-radius:4px;color:var(--text);padding:5px 9px;width:160px;outline:none;}
+.key-input:focus{border-color:var(--gold);}
+.key-input::placeholder{color:var(--muted);font-size:9px;}
+.key-link{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);text-decoration:none;opacity:.7;white-space:nowrap;}
+.key-link:hover{opacity:1;}
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:4px;flex-shrink:0;}
+.hamburger span{display:block;width:20px;height:1.5px;background:var(--muted);border-radius:1px;transition:all .2s;}
+
+/* ── LAYOUT ── */
+.app-body{display:flex;flex:1;overflow:hidden;position:relative;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sb);flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;transition:transform .25s ease;}
+.sb-section{padding:0 16px 12px;border-bottom:1px solid var(--border);}
+.sb-section:last-of-type{border-bottom:none;}
+.group-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin:12px 0 7px;display:flex;align-items:center;gap:6px;}
+.gdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.dn{background:var(--l-n);}.dl{background:var(--l-l);}.dr{background:var(--l-r);}.df{background:var(--l-f);}.di{background:var(--l-i);}
+
+.src-row{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:5px;cursor:pointer;transition:background .15s;user-select:none;margin-bottom:1px;}
+.src-row:hover{background:var(--faint);}
+.src-row.on{background:var(--faint);}
+.pill{width:26px;height:14px;border-radius:7px;border:1px solid var(--border-h);background:var(--surface);position:relative;flex-shrink:0;transition:background .18s,border-color .18s;}
+.pill::after{content:'';position:absolute;top:2px;left:2px;width:8px;height:8px;border-radius:50%;background:var(--muted);transition:transform .18s,background .18s;}
+.src-row.on .pill{border-color:var(--lc,var(--gold));background:color-mix(in srgb,var(--lc,var(--gold)) 15%,transparent);}
+.src-row.on .pill::after{transform:translateX(12px);background:var(--lc,var(--gold));}
+.src-name{font-size:12px;font-weight:400;color:var(--text);flex:1;}
+.src-badge{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--lc,var(--muted));opacity:.6;}
+
+/* Option toggles */
+.opt-row{display:flex;align-items:center;gap:8px;padding:6px 7px;border-radius:5px;cursor:pointer;user-select:none;margin-bottom:2px;transition:background .15s;}
+.opt-row:hover{background:var(--faint);}
+.opt-row.on{background:var(--faint);}
+.opt-name{font-size:12px;font-weight:400;color:var(--text);flex:1;line-height:1.3;}
+.opt-sub{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--muted);margin-top:1px;}
+.opt-pill{width:26px;height:14px;border-radius:7px;border:1px solid var(--border-h);background:var(--surface);position:relative;flex-shrink:0;transition:background .18s,border-color .18s;}
+.opt-pill::after{content:'';position:absolute;top:2px;left:2px;width:8px;height:8px;border-radius:50%;background:var(--muted);transition:transform .18s,background .18s;}
+.opt-row.on .opt-pill{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent);}
+.opt-row.on .opt-pill::after{transform:translateX(12px);background:var(--gold);}
+
+.sb-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border);}
+.sel-count{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;text-align:center;}
+.sel-count b{color:var(--gold);font-weight:500;}
+.btn-gen{width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .15s,opacity .15s;}
+.btn-gen:hover{background:#e04d22;}
+.btn-gen:disabled{opacity:.35;cursor:not-allowed;background:var(--accent);}
+
+/* ── DRAWER OVERLAY (mobile) ── */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;opacity:0;transition:opacity .25s;}
+.drawer-overlay.on{opacity:1;}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;}
+.status-bar{display:flex;align-items:center;gap:8px;padding:9px 24px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted);letter-spacing:1px;flex-shrink:0;min-height:38px;}
+.spin{width:10px;height:10px;border:1.5px solid var(--faint);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:none;flex-shrink:0;}
+.spin.on{display:block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.action-strip{display:flex;align-items:center;gap:8px;padding:7px 24px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.btn-sm{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;border-radius:4px;cursor:pointer;border:1px solid var(--border-h);background:transparent;color:var(--muted);transition:all .15s;}
+.btn-sm:hover{border-color:var(--text);color:var(--text);}
+.btn-sm.speak{border-color:var(--l-n);color:var(--l-n);}
+.btn-sm.speak.reading{background:var(--l-n);color:var(--bg);}
+
+/* ── CONTENT ── */
+.content{padding:28px 36px 100px;max-width:780px;width:100%;}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:60px 24px;text-align:center;}
+.empty-h{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,8vw,54px);font-weight:400;font-style:italic;color:var(--faint);line-height:1.1;margin-bottom:12px;}
+.empty-s{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+
+/* ── BRIEF META ── */
+.brief-meta{display:flex;align-items:flex-start;gap:12px;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.brief-date{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);}
+.src-chips{display:flex;gap:4px;flex-wrap:wrap;}
+.chip{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.6px;padding:2px 6px;border-radius:3px;text-transform:uppercase;border:1px solid;}
+
+/* ── SUMMARY BLOCK ── */
+.summary-block{background:var(--card);border:1px solid var(--border-h);border-radius:8px;padding:18px 20px;margin-bottom:28px;animation:fadeUp .4s ease both;}
+.summary-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.summary-lbl::after{content:'';flex:1;height:1px;background:color-mix(in srgb,var(--gold) 20%,transparent);}
+.summary-list{list-style:none;padding:0;}
+.summary-list li{font-size:13.5px;line-height:1.6;color:#c0bcb0;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:baseline;}
+.summary-list li:last-child{border-bottom:none;padding-bottom:0;}
+.summary-list li::before{content:'—';color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:10px;flex-shrink:0;}
+
+/* ── STORY ── */
+.story{padding:28px 0;border-bottom:1px solid var(--border);animation:fadeUp .4s ease both;position:relative;}
+.story:last-of-type{border-bottom:none;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.story-number{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);letter-spacing:1px;margin-bottom:5px;}
+.story-topic{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:9px;display:flex;align-items:center;gap:10px;}
+.story-topic::after{content:'';flex:1;height:1px;background:var(--faint);}
+.story-hed{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,4vw,30px);font-weight:600;line-height:1.18;color:var(--text);margin-bottom:14px;letter-spacing:-.2px;}
+.story-body{font-size:14px;line-height:1.9;color:#a8a49a;font-weight:300;}
+.story-body p{margin-bottom:12px;}
+.story-body p:first-child{color:#c4c0b4;font-size:14.5px;}
+.story-body p:last-child{margin-bottom:0;}
+.story-srcs{display:flex;gap:4px;margin-top:14px;flex-wrap:wrap;}
+.story-src{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.6px;padding:2px 7px;border-radius:3px;border:1px solid var(--border-h);color:var(--muted);text-transform:uppercase;}
+
+/* ── GOOD NEWS BLOCK ── */
+.goodnews-block{background:color-mix(in srgb,var(--green) 8%,transparent);border:1px solid color-mix(in srgb,var(--green) 30%,transparent);border-radius:8px;padding:20px 22px;margin-top:6px;animation:fadeUp .4s ease both;}
+.goodnews-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.goodnews-lbl::after{content:'';flex:1;height:1px;background:color-mix(in srgb,var(--green) 20%,transparent);}
+.goodnews-hed{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,3vw,24px);font-weight:600;line-height:1.2;color:#d4e8d4;margin-bottom:12px;}
+.goodnews-body{font-size:13.5px;line-height:1.85;color:#9ab89a;font-weight:300;}
+.goodnews-body p{margin-bottom:10px;}
+.goodnews-body p:last-child{margin-bottom:0;}
+
+/* ── CLOSING ── */
+.closing{border-left:2px solid var(--gold);padding:12px 16px;background:color-mix(in srgb,var(--gold) 5%,transparent);border-radius:0 5px 5px 0;margin-top:6px;animation:fadeUp .4s ease both;}
+.closing-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:6px;}
+.closing-txt{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;line-height:1.7;color:#c0bc9c;}
+
+/* ── MASTHEAD FOOTER ── */
+.masthead-footer{text-align:center;padding:10px 20px;border-top:1px solid var(--border);flex-shrink:0;}
+.masthead-txt{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--muted);letter-spacing:.5px;}
+.masthead-txt span{color:color-mix(in srgb,var(--gold) 70%,transparent);}
+
+/* ── SPEAK BAR ── */
+.speak-bar{position:fixed;bottom:0;left:0;right:0;background:#181814;border-top:1px solid var(--border-h);padding:8px 24px;display:none;align-items:center;gap:12px;z-index:200;}
+.speak-bar.on{display:flex;}
+.speak-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--l-n);text-transform:uppercase;white-space:nowrap;}
+.speak-track{flex:1;height:2px;background:var(--faint);border-radius:1px;overflow:hidden;}
+.speak-fill{height:100%;background:var(--l-n);width:0%;transition:width .4s linear;}
+.btn-stop{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:4px;border:1px solid var(--l-n);color:var(--l-n);background:transparent;cursor:pointer;}
+.btn-stop:hover{background:var(--l-n);color:var(--bg);}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--faint);border-radius:2px;}
+
+/* ── RESPONSIVE ── */
+/* Tablet landscape / small desktop */
+@media(max-width:900px){
+  :root{--sb:240px;}
+  .content{padding:24px 28px 100px;}
+  .key-input{width:130px;}
+}
+
+/* Mobile portrait & landscape */
+@media(max-width:680px){
+  html,body{overflow:auto;}
+  :root{--sb:85vw;}
+  .app-body{overflow:visible;}
+  .hamburger{display:flex;}
+  .key-lbl{display:none;}
+  .key-input{width:120px;}
+  .key-link{display:none;}
+  .topbar-center{display:none;}
+
+  .sidebar{
+    position:fixed;
+    top:0;bottom:0;left:0;
+    width:var(--sb);
+    z-index:90;
+    transform:translateX(-110%);
+    background:var(--surface);
+    border-right:1px solid var(--border-h);
+    padding-top:calc(var(--top) + 8px);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .drawer-overlay{display:block;pointer-events:none;}
+  .drawer-overlay.on{pointer-events:auto;}
+
+  .main{width:100%;}
+  .content{padding:20px 16px 100px;}
+  .status-bar,.action-strip{padding-left:16px;padding-right:16px;}
+  .story-hed{font-size:clamp(19px,5vw,26px);}
+}
+
+/* Mobile landscape specific */
+@media(max-width:900px) and (orientation:landscape) and (max-height:500px){
+  :root{--top:44px;}
+  .content{padding:16px 20px 80px;}
+  .summary-block,.goodnews-block{padding:14px 16px;}
+  .story{padding:20px 0;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="hamburger" id="hamburger" onclick="toggleDrawer()">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="logo">The <span>Brief</span></div>
+  </div>
+
+  <div class="topbar-center">
+    <div class="topbar-date" id="topDate"></div>
+    <div class="topbar-byline">Created by Jesse Rosner</div>
+  </div>
+
+  <div class="key-wrap">
+    <span class="key-lbl">Gemini Key</span>
+    <input class="key-input" id="apiKey" type="password" placeholder="Gemini API key" autocomplete="off"/>
+    <a class="key-link" href="https://aistudio.google.com/apikey" target="_blank">Get key &rarr;</a>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sb-section">
+      <div class="group-label"><div class="gdot dn"></div>Wire / Neutral</div>
+      <div class="src-row on" style="--lc:var(--l-n)" data-src="AP News" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">AP News</span><span class="src-badge">Wire</span></div>
+      <div class="src-row" style="--lc:var(--l-n)" data-src="Reuters" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Reuters</span><span class="src-badge">Wire</span></div>
+      <div class="src-row" style="--lc:var(--l-n)" data-src="NPR" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">NPR</span><span class="src-badge">Public</span></div>
+      <div class="src-row" style="--lc:var(--l-n)" data-src="Axios" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Axios</span><span class="src-badge">Neutral</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="group-label"><div class="gdot di"></div>International</div>
+      <div class="src-row" style="--lc:var(--l-i)" data-src="BBC News" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">BBC News</span><span class="src-badge">Intl</span></div>
+      <div class="src-row" style="--lc:var(--l-i)" data-src="Al Jazeera" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Al Jazeera</span><span class="src-badge">Intl</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="group-label"><div class="gdot dl"></div>Center-Left</div>
+      <div class="src-row on" style="--lc:var(--l-l)" data-src="New York Times" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">New York Times</span><span class="src-badge">Ctr-Left</span></div>
+      <div class="src-row" style="--lc:var(--l-l)" data-src="Washington Post" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Washington Post</span><span class="src-badge">Ctr-Left</span></div>
+      <div class="src-row" style="--lc:var(--l-l)" data-src="CNN" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">CNN</span><span class="src-badge">Ctr-Left</span></div>
+      <div class="src-row" style="--lc:var(--l-l)" data-src="The Guardian" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">The Guardian</span><span class="src-badge">Left</span></div>
+      <div class="src-row" style="--lc:var(--l-l)" data-src="NBC News" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">NBC News</span><span class="src-badge">Ctr-Left</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="group-label"><div class="gdot dr"></div>Center-Right</div>
+      <div class="src-row on" style="--lc:var(--l-r)" data-src="Wall Street Journal" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Wall Street Journal</span><span class="src-badge">Ctr-Right</span></div>
+      <div class="src-row" style="--lc:var(--l-r)" data-src="Fox News" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Fox News</span><span class="src-badge">Right</span></div>
+      <div class="src-row" style="--lc:var(--l-r)" data-src="New York Post" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">New York Post</span><span class="src-badge">Right</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="group-label"><div class="gdot df"></div>Financial</div>
+      <div class="src-row" style="--lc:var(--l-f)" data-src="Bloomberg" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Bloomberg</span><span class="src-badge">Financial</span></div>
+      <div class="src-row" style="--lc:var(--l-f)" data-src="Financial Times" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Financial Times</span><span class="src-badge">Financial</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="group-label"><div class="gdot dn"></div>DC / Policy</div>
+      <div class="src-row" style="--lc:var(--l-n)" data-src="Politico" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">Politico</span><span class="src-badge">DC Insider</span></div>
+      <div class="src-row" style="--lc:var(--l-n)" data-src="The Hill" onclick="toggleSrc(this)"><div class="pill"></div><span class="src-name">The Hill</span><span class="src-badge">DC Insider</span></div>
+    </div>
+
+    <!-- BRIEFING OPTIONS -->
+    <div class="sb-section">
+      <div class="group-label">Briefing Options</div>
+      <div class="opt-row on" id="optSummary" onclick="toggleOpt(this)">
+        <div style="flex:1">
+          <div class="opt-name">Bullet Summary</div>
+          <div class="opt-sub">Quick-glance digest at the top</div>
+        </div>
+        <div class="opt-pill"></div>
+      </div>
+      <div class="opt-row on" id="optGoodNews" onclick="toggleOpt(this)">
+        <div style="flex:1">
+          <div class="opt-name">Good News Section</div>
+          <div class="opt-sub">Positive stories to end on</div>
+        </div>
+        <div class="opt-pill"></div>
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sel-count"><b id="selN">3</b> sources selected</div>
+      <button class="btn-gen" id="btnGen" onclick="generate()">&#9728; Generate Briefing</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="status-bar"><div class="spin" id="spin"></div><span id="statusTxt">Select sources and generate your briefing.</span></div>
+    <div class="action-strip" id="actionStrip" style="display:none">
+      <button class="btn-sm speak" id="btnSpeak" onclick="toggleSpeak()">&#9679; Read Aloud</button>
+    </div>
+    <div id="contentArea">
+      <div class="empty">
+        <div class="empty-h">Your world,<br>your sources.</div>
+        <div class="empty-s">Open menu &rarr; select sources &rarr; generate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MASTHEAD FOOTER -->
+<footer class="masthead-footer">
+  <div class="masthead-txt">The Brief &mdash; <span>Created by Jesse Rosner</span> &mdash; Powered by Gemini</div>
+</footer>
+
+<!-- SPEAK BAR -->
+<div class="speak-bar" id="speakBar">
+  <span class="speak-lbl">&#9679; Reading</span>
+  <div class="speak-track"><div class="speak-fill" id="speakFill"></div></div>
+  <button class="btn-stop" onclick="stopSpeak()">Stop</button>
+</div>
+
+<script>
+// ── PROFILES ────────────────────────────────────────────────────────────────
+var PROFILES={
+  'AP News':            {lean:'neutral',      desc:'Wire service. Neutral, factual, internationally broad. Leads with verifiable facts, no editorial slant. The global baseline.'},
+  'Reuters':            {lean:'neutral',      desc:'Wire service. Business-forward, globally trusted. Unvarnished factual reporting, strong on international markets and geopolitics.'},
+  'NPR':                {lean:'center-left',  desc:'US public radio. Center-left, depth-focused. Strong on domestic policy, culture, and science. Avoids sensationalism; favors nuance.'},
+  'Axios':              {lean:'neutral',      desc:'Neutral, smart-brevity format. Excellent for DC and business elite consensus view.'},
+  'BBC News':           {lean:'international',desc:'UK public broadcaster. Broadly neutral, outstanding international coverage. Frames US news from an outsider perspective.'},
+  'Al Jazeera':         {lean:'international',desc:'Qatar-based. Strong on Middle East, Africa, Global South. Challenges Western-centric narratives.'},
+  'New York Times':     {lean:'center-left',  desc:'Liberal-leaning broadsheet. Domestic policy, investigation, human and social impact framing.'},
+  'Washington Post':    {lean:'center-left',  desc:'Liberal-leaning DC paper. Executive branch, national security, accountability journalism.'},
+  'CNN':                {lean:'center-left',  desc:'Center-left 24-hour network. Politics-heavy, breaking-news driven.'},
+  'The Guardian':       {lean:'left',         desc:'Left-leaning UK outlet. Climate, inequality, social justice, investigative work.'},
+  'NBC News':           {lean:'center-left',  desc:'Center-left broadcast network. Mainstream liberal American framing.'},
+  'Wall Street Journal':{lean:'center-right', desc:'Center-right. Business and economics-first lens. Reads politics through market implications.'},
+  'Fox News':           {lean:'right',        desc:'Right-leaning populist conservative. Republican base resonance. Critical for understanding right-media framing.'},
+  'New York Post':      {lean:'right',        desc:'Right-leaning tabloid. Populist conservative, punchy. Amplifies center-right narratives.'},
+  'Bloomberg':          {lean:'financial',    desc:'Financial intelligence. Data-driven. Every story read through an investor and economic lens.'},
+  'Financial Times':    {lean:'financial',    desc:'UK-based financial paper. Centrist, rigorous, internationally focused.'},
+  'Politico':           {lean:'neutral',      desc:'DC insider politics. Bipartisan, policy-wonk. Deep on legislation and Congressional dynamics.'},
+  'The Hill':           {lean:'neutral',      desc:'Congress-focused, broadly neutral. Strong on legislative process and Hill sourcing.'},
+};
+
+function lc(src){
+  var p=PROFILES[src];if(!p)return 'var(--muted)';
+  if(p.lean==='left'||p.lean==='center-left')return 'var(--l-l)';
+  if(p.lean==='right'||p.lean==='center-right')return 'var(--l-r)';
+  if(p.lean==='financial')return 'var(--l-f)';
+  if(p.lean==='international')return 'var(--l-i)';
+  return 'var(--l-n)';
+}
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+var briefText='',isSpeaking=false,utt=null;
+
+function fmtDate(){return new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
+function fmtShort(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+document.getElementById('topDate').textContent=fmtShort().toUpperCase()+' \u00B7 MORNING EDITION';
+
+// ── DRAWER (mobile) ─────────────────────────────────────────────────────────
+function toggleDrawer(){
+  var sb=document.getElementById('sidebar');
+  var ov=document.getElementById('drawerOverlay');
+  var open=sb.classList.toggle('open');
+  ov.classList.toggle('on',open);
+}
+function closeDrawer(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('on');
+}
+
+// ── TOGGLES ─────────────────────────────────────────────────────────────────
+function toggleSrc(el){el.classList.toggle('on');updateN();}
+function toggleOpt(el){el.classList.toggle('on');}
+function getSel(){return Array.from(document.querySelectorAll('.src-row.on')).map(function(e){return e.dataset.src;});}
+function optOn(id){return document.getElementById(id).classList.contains('on');}
+function updateN(){
+  var n=getSel().length;
+  document.getElementById('selN').textContent=n;
+  document.getElementById('btnGen').disabled=n<2;
+}
+updateN();
+
+// ── PROMPT BUILDER ──────────────────────────────────────────────────────────
+function buildPrompt(srcs){
+  var today=fmtDate(),n=srcs.length;
+  var wantSummary=optOn('optSummary');
+  var wantGoodNews=optOn('optGoodNews');
+
+  var profiles=srcs.map(function(s){
+    var p=PROFILES[s]||{lean:'unknown',desc:'General news outlet.'};
+    return '- '+s+' ['+p.lean.toUpperCase()+']: '+p.desc;
+  }).join('\n');
+
+  var synthInstr;
+  if(n<=3) synthInstr='Run direct pairwise comparisons. Explicitly name which outlet leads with which angle and note any story one outlet ran that another ignored.';
+  else if(n<=6) synthInstr='Group sources by editorial family (left-leaning, right-leaning, neutral, financial) and compare families. Surface consensus view vs. outlier takes.';
+  else synthInstr='Identify the dominant narrative across the majority of outlets, then flag any outlet whose framing differs significantly. Flag stories only covered by politically-aligned outlets as potentially agenda-driven.';
+
+  var summaryInstr=wantSummary
+    ? 'BEFORE the first SECTION block, output a bullet summary of all stories in this exact format:\n\nSUMMARY:\n- [One crisp sentence per major story, maximum 12 words each, listing all 4-5 stories]\n\n'
+    : '';
+
+  var goodNewsInstr=wantGoodNews
+    ? '\nAFTER the CLOSING block, output one positive or uplifting story in this exact format:\n\nGOODNEWS_HEADLINE: [An original uplifting headline]\nGOODNEWS_BODY: [2 short paragraphs about a genuinely positive, feel-good news story from today — scientific breakthrough, human achievement, community triumph, or heartwarming event. Keep it real and grounded, not saccharine.]\n'
+    : '';
+
+  return 'Today is '+today+'. You are a senior editor at a world-class nonpartisan news organization producing a morning briefing.\n\n'
+    +'The user has selected '+n+' source'+(n!==1?'s':'')+' with these editorial profiles:\n\n'
+    +profiles+'\n\n'
+    +'STEP 1 \u2014 SEARCH: Use Google Search to find today\'s top news stories. Search for current headlines and breaking news to ground your briefing in real events happening today.\n\n'
+    +'STEP 2 \u2014 EDITORIAL LENSES: Apply each outlet\'s profile to analyze how they would frame each story differently. Use your knowledge of these outlets\' perspectives to characterize divergence.\n\n'
+    +'STEP 3 \u2014 SYNTHESIZE: '+synthInstr+'\n\n'
+    +'STEP 4 \u2014 OUTPUT in EXACTLY this structure:\n\n'
+    +summaryInstr
+    +'For each of 4-5 major story clusters:\n\n'
+    +'SECTION: [3-5 word topic label]\n'
+    +'HEADLINE: [Your original, specific headline \u2014 not copied from any source]\n'
+    +'BODY: [Three paragraphs:\n'
+    +'  P1 \u2014 Core facts: what happened, agreed-upon baseline.\n'
+    +'  P2 \u2014 Editorial divergence: how do the selected outlets frame this differently? Who reads it politically, economically, humanistically? Who is silent?\n'
+    +'  P3 \u2014 Stakes and context: why does this matter? What to watch next?]\n'
+    +'SOURCES: [Comma-separated list of which selected sources would cover this]\n\n'
+    +'Then:\n'
+    +'CLOSING: [2-3 sentences. Name the most consequential story. Flag any story only right-leaning or only left-leaning outlets would cover \u2014 label it a potential agenda item.]\n'
+    +goodNewsInstr+'\n'
+    +'RULES: No padding. No weasel words ("some say", "it is believed"). Merge duplicate stories. Hard news first. Never present opinion as reporting.';
+}
+
+// ── GEMINI CALL ─────────────────────────────────────────────────────────────
+async function callGemini(prompt,onStatus){
+  var key=document.getElementById('apiKey').value.trim();
+  if(!key) throw new Error('No API key \u2014 paste your Gemini key in the top bar. Get one free at aistudio.google.com/apikey');
+  onStatus('Searching the web and synthesizing\u2026');
+  var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+key,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      contents:[{parts:[{text:prompt}]}],
+      tools:[{googleSearch:{}}]
+    })
+  });
+  if(!res.ok){
+    var err=await res.json().catch(function(){return{};});
+    throw new Error((err.error&&err.error.message)||('API error '+res.status));
+  }
+  var data=await res.json();
+  var parts=(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[];
+  var text=parts.filter(function(p){return p.text;}).map(function(p){return p.text;}).join('\n');
+  if(!text) throw new Error('Empty response from Gemini.');
+  return text;
+}
+
+// ── GENERATE ────────────────────────────────────────────────────────────────
+async function generate(){
+  var srcs=getSel();
+  if(srcs.length<2){alert('Select at least 2 sources.');return;}
+  closeDrawer();
+  var btn=document.getElementById('btnGen'),spin=document.getElementById('spin'),
+      st=document.getElementById('statusTxt'),as=document.getElementById('actionStrip');
+  btn.disabled=true;spin.classList.add('on');as.style.display='none';
+  st.textContent='Searching the web and synthesizing\u2026';
+  document.getElementById('contentArea').innerHTML='';briefText='';
+  try{
+    var text=await callGemini(buildPrompt(srcs),function(msg){st.textContent=msg;});
+    st.textContent='Briefing ready \u2014 '+srcs.length+' sources \u00B7 '+fmtShort();
+    spin.classList.remove('on');
+    render(text,srcs);
+    as.style.display='flex';
+  }catch(e){
+    st.textContent='Error: '+e.message;
+    spin.classList.remove('on');
+  }
+  btn.disabled=false;updateN();
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render(text,srcs){
+  briefText='';
+  var area=document.getElementById('contentArea');
+  area.innerHTML='';
+  var wrap=document.createElement('div');wrap.className='content';
+
+  // Source chips
+  var chips=srcs.map(function(s){return '<span class="chip" style="color:'+lc(s)+';border-color:'+lc(s)+'44">'+s+'</span>';}).join('');
+  wrap.innerHTML='<div class="brief-meta"><span class="brief-date">'+fmtDate()+'</span><div class="src-chips">'+chips+'</div></div>';
+
+  // Normalize
+  var t=text.replace(/\r\n/g,'\n').replace(/\*\*/g,'').replace(/\*/g,'').replace(/#+\s*/g,'');
+
+  // ── SUMMARY BLOCK ──
+  var sumMatch=t.match(/SUMMARY:\s*([\s\S]+?)(?=\nSECTION:|$)/);
+  if(sumMatch){
+    var bullets=sumMatch[1].trim().split('\n').filter(function(l){return l.trim().replace(/^[-\u2014\u2013\u2022]\s*/,'').length>5;});
+    if(bullets.length>0){
+      var liHtml=bullets.map(function(b){return '<li>'+b.replace(/^[-\u2014\u2013\u2022]\s*/,'').trim()+'</li>';}).join('');
+      wrap.innerHTML+='<div class="summary-block" style="animation-delay:0s"><div class="summary-lbl">Today at a glance</div><ul class="summary-list">'+liHtml+'</ul></div>';
+    }
+  }
+
+  // ── PARSE SECTIONS ──
+  var sections=[];
+  var sReg=/SECTION:\s*([^\n]+)\s*\nHEADLINE:\s*([^\n]+)\s*\nBODY:\s*([\s\S]+?)(?=\nSOURCES:)[\s\S]*?SOURCES:\s*([^\n]+)/gm;
+  var m;
+  while((m=sReg.exec(t))!==null) sections.push({topic:m[1].trim(),hed:m[2].trim(),body:m[3].trim(),srcs:m[4].trim()});
+
+  // Fallback splitter
+  if(sections.length===0){
+    t.split(/(?=SECTION:)/).forEach(function(chunk){
+      if(!chunk.trim())return;
+      var tp=chunk.match(/SECTION:\s*([^\n]+)/);
+      var hl=chunk.match(/HEADLINE:\s*([^\n]+)/);
+      var bd=chunk.match(/BODY:\s*([\s\S]+?)(?=SOURCES:|$)/);
+      var sr=chunk.match(/SOURCES:\s*([^\n]+)/);
+      if(tp&&hl&&bd) sections.push({topic:tp[1].trim(),hed:hl[1].trim(),body:bd[1].trim(),srcs:sr?sr[1].trim():srcs.join(', ')});
+    });
+  }
+
+  // Render sections
+  if(sections.length===0){
+    // Last resort: style labeled lines
+    var paras=t.split('\n\n').filter(function(p){return p.trim().length>10;});
+    paras.forEach(function(p,i){
+      p=p.trim();
+      if(/^SECTION:/.test(p)) wrap.innerHTML+='<div class="story-topic" style="animation:fadeUp .4s ease both;animation-delay:'+(i*.05)+'s">'+p.replace(/^SECTION:\s*/,'')+'</div>';
+      else if(/^HEADLINE:/.test(p)) wrap.innerHTML+='<div class="story-hed" style="animation:fadeUp .4s ease both;animation-delay:'+(i*.05)+'s">'+p.replace(/^HEADLINE:\s*/,'')+'</div>';
+      else if(/^CLOSING:/.test(p)){var c=p.replace(/^CLOSING:\s*/,'');wrap.innerHTML+='<div class="closing"><div class="closing-lbl">Editor\'s Note</div><div class="closing-txt">'+c+'</div></div>';briefText+=c+' ';}
+      else if(/^SOURCES:/.test(p)){var pills=p.replace(/^SOURCES:\s*/,'').split(',').map(function(x){return '<span class="story-src">'+x.trim()+'</span>';}).join('');wrap.innerHTML+='<div class="story-srcs" style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)">'+pills+'</div>';}
+      else{wrap.innerHTML+='<div class="story-body" style="animation:fadeUp .4s ease both;animation-delay:'+(i*.05)+'s;margin-bottom:16px"><p>'+p+'</p></div>';briefText+=p+' ';}
+    });
+  } else {
+    sections.forEach(function(s,i){
+      var srcList=s.srcs.split(',').map(function(x){return x.trim();});
+      var srcPills=srcList.map(function(x){return '<span class="story-src">'+x+'</span>';}).join('');
+      var bodyClean=s.body.replace(/P[123]\s*[\u2014\-]\s*/gi,'').replace(/Paragraph [123][\s\:]+/gi,'');
+      var bodyParas=bodyClean.split(/\n\n+/).filter(function(p){return p.trim().length>10;});
+      var bodyHtml=bodyParas.length>0
+        ? bodyParas.map(function(p){return '<p>'+p.trim()+'</p>';}).join('')
+        : '<p>'+bodyClean.trim()+'</p>';
+      wrap.innerHTML+='<div class="story" style="animation-delay:'+(i*.08)+'s">'
+        +'<div class="story-number">'+String(i+1).padStart(2,'0')+'</div>'
+        +'<div class="story-topic">'+s.topic+'</div>'
+        +'<div class="story-hed">'+s.hed+'</div>'
+        +'<div class="story-body">'+bodyHtml+'</div>'
+        +'<div class="story-srcs">'+srcPills+'</div></div>';
+      briefText+=s.topic+'. '+s.hed+'. '+bodyClean+'\n\n';
+    });
+  }
+
+  // ── CLOSING ──
+  var cm=t.match(/CLOSING:\s*([\s\S]+?)(?=\nGOODNEWS_HEADLINE:|$)/);
+  if(cm){
+    var ct=cm[1].trim().replace(/P[123]\s*[\u2014\-]\s*/gi,'');
+    wrap.innerHTML+='<div class="closing" style="animation-delay:'+(sections.length*.08)+'s"><div class="closing-lbl">Editor\'s Note</div><div class="closing-txt">'+ct+'</div></div>';
+    briefText+=ct;
+  }
+
+  // ── GOOD NEWS BLOCK ──
+  var gnH=t.match(/GOODNEWS_HEADLINE:\s*([^\n]+)/);
+  var gnB=t.match(/GOODNEWS_BODY:\s*([\s\S]+?)$/);
+  if(gnH&&gnB){
+    var gnBody=gnB[1].trim().split(/\n\n+/).filter(function(p){return p.trim();}).map(function(p){return '<p>'+p.trim()+'</p>';}).join('');
+    wrap.innerHTML+='<div class="goodnews-block" style="animation-delay:'+((sections.length+1)*.08)+'s">'
+      +'<div class="goodnews-lbl">Something good</div>'
+      +'<div class="goodnews-hed">'+gnH[1].trim()+'</div>'
+      +'<div class="goodnews-body">'+gnBody+'</div></div>';
+    briefText+=gnH[1].trim()+'. '+gnB[1].trim();
+  }
+
+  area.appendChild(wrap);
+}
+
+// ── SPEAK ────────────────────────────────────────────────────────────────────
+function toggleSpeak(){
+  if(isSpeaking){stopSpeak();return;}
+  if(!briefText)return;
+  isSpeaking=true;
+  document.getElementById('speakBar').classList.add('on');
+  document.getElementById('btnSpeak').classList.add('reading');
+  document.getElementById('btnSpeak').textContent='\u25C9 Reading\u2026';
+  utt=new SpeechSynthesisUtterance('Good morning. Here is your briefing for '+fmtDate()+'. '+briefText);
+  utt.rate=0.93;
+  var prog=0,dur=(briefText.length/14)*1000;
+  var iv=setInterval(function(){
+    if(!isSpeaking){clearInterval(iv);return;}
+    prog=Math.min(97,prog+(100/(dur/250)));
+    document.getElementById('speakFill').style.width=prog+'%';
+  },250);
+  utt.onend=function(){clearInterval(iv);document.getElementById('speakFill').style.width='100%';setTimeout(stopSpeak,600);};
+  window.speechSynthesis.speak(utt);
+}
+
+function stopSpeak(){
+  isSpeaking=false;window.speechSynthesis.cancel();
+  document.getElementById('speakBar').classList.remove('on');
+  document.getElementById('btnSpeak').classList.remove('reading');
+  document.getElementById('btnSpeak').textContent='\u25CF Read Aloud';
+  document.getElementById('speakFill').style.width='0%';
+}
+</script>
+</body>
+</html>
