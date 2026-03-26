@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>The Brief — by Jesse Rosner</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{
   --bg:#0d0d0b;--surface:#141410;--card:#1c1c18;
   --border:rgba(255,255,255,0.07);--border-h:rgba(255,255,255,0.14);
   --text:#e8e4d8;--muted:#6b6860;--faint:#252520;
-  --accent:#c8401a;--gold:#c9a84c;--green:#4a8f6e;
+  --accent:#c8401a;--gold:#c9a84c;--green:#4a8f6e;--blue:#4a8fa3;
   --l-n:#7a8c6e;--l-l:#4a8fa3;--l-r:#b85c38;--l-f:#8a7ab8;--l-i:#6b8f8a;
   --sb:272px;--top:54px;
 }
@@ -25,15 +26,16 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
 .topbar-center{display:flex;flex-direction:column;align-items:center;line-height:1.2;}
 .topbar-date{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
 .topbar-byline{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--muted);letter-spacing:.5px;}
-.key-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.key-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;display:none;}
-.key-input{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface);border:1px solid var(--border-h);border-radius:4px;color:var(--text);padding:5px 9px;width:160px;outline:none;}
+.key-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.key-input{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface);border:1px solid var(--border-h);border-radius:4px;color:var(--text);padding:5px 9px;width:155px;outline:none;}
 .key-input:focus{border-color:var(--gold);}
 .key-input::placeholder{color:var(--muted);font-size:9px;}
+.key-clear{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 2px;line-height:1;transition:color .15s;}
+.key-clear:hover{color:var(--accent);}
 .key-link{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);text-decoration:none;opacity:.7;white-space:nowrap;}
 .key-link:hover{opacity:1;}
 .hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:4px;flex-shrink:0;}
-.hamburger span{display:block;width:20px;height:1.5px;background:var(--muted);border-radius:1px;transition:all .2s;}
+.hamburger span{display:block;width:20px;height:1.5px;background:var(--muted);border-radius:1px;}
 
 /* ── LAYOUT ── */
 .app-body{display:flex;flex:1;overflow:hidden;position:relative;}
@@ -67,6 +69,27 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
 .opt-row.on .opt-pill{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,transparent);}
 .opt-row.on .opt-pill::after{transform:translateX(12px);background:var(--gold);}
 
+/* Email section */
+.email-input{width:100%;font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface);border:1px solid var(--border-h);border-radius:4px;color:var(--text);padding:6px 9px;outline:none;margin-bottom:7px;}
+.email-input:focus{border-color:var(--blue);}
+.email-input::placeholder{color:var(--muted);font-size:9px;}
+.email-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.email-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);flex:1;}
+.time-select{font-family:'JetBrains Mono',monospace;font-size:9px;background:var(--surface);border:1px solid var(--border-h);border-radius:4px;color:var(--text);padding:4px 6px;outline:none;cursor:pointer;}
+.time-select:focus{border-color:var(--blue);}
+.btn-send{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--blue);background:transparent;color:var(--blue);transition:all .15s;width:100%;margin-top:4px;}
+.btn-send:hover{background:var(--blue);color:var(--bg);}
+.btn-send:disabled{opacity:.35;cursor:not-allowed;}
+.email-status{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-align:center;margin-top:5px;min-height:12px;}
+.ejs-toggle{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);cursor:pointer;text-decoration:underline;display:block;margin-bottom:6px;}
+.ejs-setup{display:none;border:1px solid var(--border);border-radius:5px;padding:8px;margin-bottom:6px;background:var(--faint);}
+.ejs-setup.open{display:block;}
+.ejs-input{width:100%;font-family:'JetBrains Mono',monospace;font-size:9px;background:var(--surface);border:1px solid var(--border-h);border-radius:3px;color:var(--text);padding:4px 7px;outline:none;margin-bottom:4px;}
+.ejs-input:focus{border-color:var(--blue);}
+.ejs-link{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);text-decoration:none;opacity:.7;}
+.ejs-link:hover{opacity:1;}
+.ejs-hint{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--muted);line-height:1.5;margin-bottom:6px;}
+
 .sb-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border);}
 .sel-count{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;text-align:center;}
 .sel-count b{color:var(--gold);font-weight:500;}
@@ -74,12 +97,12 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
 .btn-gen:hover{background:#e04d22;}
 .btn-gen:disabled{opacity:.35;cursor:not-allowed;background:var(--accent);}
 
-/* ── DRAWER OVERLAY (mobile) ── */
+/* ── DRAWER OVERLAY ── */
 .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:80;opacity:0;transition:opacity .25s;}
 .drawer-overlay.on{opacity:1;}
 
 /* ── MAIN ── */
-.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;position:relative;}
 .status-bar{display:flex;align-items:center;gap:8px;padding:9px 24px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted);letter-spacing:1px;flex-shrink:0;min-height:38px;}
 .spin{width:10px;height:10px;border:1.5px solid var(--faint);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:none;flex-shrink:0;}
 .spin.on{display:block;}
@@ -126,7 +149,7 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
 .story-srcs{display:flex;gap:4px;margin-top:14px;flex-wrap:wrap;}
 .story-src{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.6px;padding:2px 7px;border-radius:3px;border:1px solid var(--border-h);color:var(--muted);text-transform:uppercase;}
 
-/* ── GOOD NEWS BLOCK ── */
+/* ── GOOD NEWS ── */
 .goodnews-block{background:color-mix(in srgb,var(--green) 8%,transparent);border:1px solid color-mix(in srgb,var(--green) 30%,transparent);border-radius:8px;padding:20px 22px;margin-top:6px;animation:fadeUp .4s ease both;}
 .goodnews-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
 .goodnews-lbl::after{content:'';flex:1;height:1px;background:color-mix(in srgb,var(--green) 20%,transparent);}
@@ -140,8 +163,34 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
 .closing-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:6px;}
 .closing-txt{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;line-height:1.7;color:#c0bc9c;}
 
+/* ── LOADER ── */
+.loader{display:none;position:absolute;inset:0;background:var(--bg);z-index:60;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;}
+.loader.on{display:flex;}
+.loader-progress-rail{width:100%;max-width:500px;height:2px;background:var(--faint);border-radius:1px;overflow:hidden;margin-bottom:40px;}
+.loader-progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:1px;width:0%;}
+@keyframes fillBar{from{width:0%}to{width:95%}}
+.loader-logo{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;letter-spacing:.5px;margin-bottom:36px;animation:breathe 3s ease-in-out infinite;}
+.loader-logo span{color:var(--gold);}
+@keyframes breathe{0%,100%{opacity:.7;}50%{opacity:1;}}
+.loader-card{width:100%;max-width:500px;background:var(--card);border:1px solid var(--border-h);border-radius:10px;padding:28px 28px 22px;min-height:200px;display:flex;flex-direction:column;position:relative;overflow:hidden;margin-bottom:28px;}
+.loader-type{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.loader-content{flex:1;display:flex;flex-direction:column;justify-content:center;}
+.loader-word{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--text);margin-bottom:4px;letter-spacing:-.3px;}
+.loader-pron{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:12px;letter-spacing:.5px;}
+.loader-pos{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
+.loader-def{font-size:14px;line-height:1.7;color:#b8b4a8;margin-bottom:10px;}
+.loader-example{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--muted);line-height:1.6;}
+.loader-fact{font-family:'Cormorant Garamond',serif;font-size:17px;line-height:1.65;color:#c8c4b8;text-align:center;}
+.loader-tip-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.loader-tip{font-size:18px;line-height:1.6;color:#d0ccbf;font-weight:400;text-align:center;}
+.loader-fade{animation:contentFade .6s ease both;}
+@keyframes contentFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.loader-status{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.loader-quote{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--muted);text-align:center;max-width:440px;line-height:1.6;}
+.lspin{width:8px;height:8px;border:1.5px solid var(--faint);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+
 /* ── MASTHEAD FOOTER ── */
-.masthead-footer{text-align:center;padding:10px 20px;border-top:1px solid var(--border);flex-shrink:0;}
+.masthead-footer{text-align:center;padding:8px 20px;border-top:1px solid var(--border);flex-shrink:0;}
 .masthead-txt{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--muted);letter-spacing:.5px;}
 .masthead-txt span{color:color-mix(in srgb,var(--gold) 70%,transparent);}
 
@@ -159,82 +208,57 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
 ::-webkit-scrollbar-thumb{background:var(--faint);border-radius:2px;}
 
 /* ── RESPONSIVE ── */
-/* Tablet landscape / small desktop */
-@media(max-width:900px){
-  :root{--sb:240px;}
-  .content{padding:24px 28px 100px;}
-  .key-input{width:130px;}
-}
-
-/* Mobile portrait & landscape */
+@media(max-width:900px){:root{--sb:240px;}.content{padding:24px 28px 100px;}.key-input{width:130px;}}
 @media(max-width:680px){
   html,body{overflow:auto;}
   :root{--sb:85vw;}
   .app-body{overflow:visible;}
   .hamburger{display:flex;}
-  .key-lbl{display:none;}
-  .key-input{width:120px;}
-  .key-link{display:none;}
+  .key-input{width:110px;}
+  .key-link,.key-clear{display:none;}
   .topbar-center{display:none;}
-
-  .sidebar{
-    position:fixed;
-    top:0;bottom:0;left:0;
-    width:var(--sb);
-    z-index:90;
-    transform:translateX(-110%);
-    background:var(--surface);
-    border-right:1px solid var(--border-h);
-    padding-top:calc(var(--top) + 8px);
-  }
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:var(--sb);z-index:90;transform:translateX(-110%);background:var(--surface);border-right:1px solid var(--border-h);padding-top:calc(var(--top) + 8px);}
   .sidebar.open{transform:translateX(0);}
   .drawer-overlay{display:block;pointer-events:none;}
   .drawer-overlay.on{pointer-events:auto;}
-
   .main{width:100%;}
   .content{padding:20px 16px 100px;}
   .status-bar,.action-strip{padding-left:16px;padding-right:16px;}
   .story-hed{font-size:clamp(19px,5vw,26px);}
+  .loader{padding:20px 16px;}
+  .loader-card{padding:20px 18px 16px;}
+  .loader-fact,.loader-tip{font-size:15px;}
 }
-
-/* Mobile landscape specific */
 @media(max-width:900px) and (orientation:landscape) and (max-height:500px){
   :root{--top:44px;}
   .content{padding:16px 20px 80px;}
-  .summary-block,.goodnews-block{padding:14px 16px;}
+  .loader-logo{font-size:24px;margin-bottom:16px;}
+  .loader-card{min-height:140px;padding:16px 18px 14px;}
   .story{padding:20px 0;}
 }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:10px;">
-    <div class="hamburger" id="hamburger" onclick="toggleDrawer()">
-      <span></span><span></span><span></span>
-    </div>
+    <div class="hamburger" id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></div>
     <div class="logo">The <span>Brief</span></div>
   </div>
-
   <div class="topbar-center">
     <div class="topbar-date" id="topDate"></div>
     <div class="topbar-byline">Created by Jesse Rosner</div>
   </div>
-
   <div class="key-wrap">
-    <span class="key-lbl">Gemini Key</span>
-    <input class="key-input" id="apiKey" type="password" placeholder="Gemini API key" autocomplete="off"/>
+    <input class="key-input" id="apiKey" type="password" placeholder="Gemini API key" autocomplete="off" oninput="saveKey(this.value)"/>
+    <button class="key-clear" title="Clear saved key" onclick="clearKey()">&#x2715;</button>
     <a class="key-link" href="https://aistudio.google.com/apikey" target="_blank">Get key &rarr;</a>
   </div>
 </header>
 
 <div class="app-body">
-
-  <!-- DRAWER OVERLAY -->
   <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 
-  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
 
     <div class="sb-section">
@@ -283,19 +307,44 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
     <div class="sb-section">
       <div class="group-label">Briefing Options</div>
       <div class="opt-row on" id="optSummary" onclick="toggleOpt(this)">
-        <div style="flex:1">
-          <div class="opt-name">Bullet Summary</div>
-          <div class="opt-sub">Quick-glance digest at the top</div>
-        </div>
+        <div style="flex:1"><div class="opt-name">Bullet Summary</div><div class="opt-sub">Quick-glance digest at top</div></div>
         <div class="opt-pill"></div>
       </div>
       <div class="opt-row on" id="optGoodNews" onclick="toggleOpt(this)">
-        <div style="flex:1">
-          <div class="opt-name">Good News Section</div>
-          <div class="opt-sub">Positive stories to end on</div>
-        </div>
+        <div style="flex:1"><div class="opt-name">Good News Section</div><div class="opt-sub">Positive stories to end on</div></div>
         <div class="opt-pill"></div>
       </div>
+    </div>
+
+    <!-- EMAIL SECTION -->
+    <div class="sb-section">
+      <div class="group-label">&#9993; Daily Email</div>
+      <input class="email-input" id="emailAddr" type="email" placeholder="your@email.com" oninput="saveEmail()" />
+      <div class="email-row">
+        <span class="email-label">Daily delivery</span>
+        <select class="time-select" id="deliveryTime" onchange="saveEmail()">
+          <option value="5">5:00 AM</option>
+          <option value="6">6:00 AM</option>
+          <option value="7" selected>7:00 AM</option>
+          <option value="8">8:00 AM</option>
+          <option value="9">9:00 AM</option>
+        </select>
+      </div>
+      <div class="opt-row" id="optEmail" onclick="toggleOpt(this);saveEmail();" style="margin-bottom:8px;">
+        <div style="flex:1"><div class="opt-name">Enable daily send</div><div class="opt-sub" id="emailScheduleStatus">Tap to activate</div></div>
+        <div class="opt-pill"></div>
+      </div>
+
+      <span class="ejs-toggle" onclick="toggleEjsSetup()">&#9881; EmailJS setup</span>
+      <div class="ejs-setup" id="ejsSetup">
+        <div class="ejs-hint">1. Create free account at <a class="ejs-link" href="https://emailjs.com" target="_blank">emailjs.com</a><br>2. Add an Email Service &amp; note Service ID<br>3. Create Template with vars: <b style="color:var(--text)">{{to_email}}</b>, <b style="color:var(--text)">{{date}}</b>, <b style="color:var(--text)">{{briefing_content}}</b><br>4. Copy your Public Key from Account page</div>
+        <input class="ejs-input" id="ejsService" placeholder="Service ID" oninput="saveEjs()"/>
+        <input class="ejs-input" id="ejsTemplate" placeholder="Template ID" oninput="saveEjs()"/>
+        <input class="ejs-input" id="ejsPubkey" placeholder="Public Key" oninput="saveEjs()"/>
+      </div>
+
+      <button class="btn-send" id="btnSend" onclick="sendEmail()" disabled>Send Current Briefing Now</button>
+      <div class="email-status" id="emailStatus"></div>
     </div>
 
     <div class="sb-footer">
@@ -305,11 +354,24 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
   </aside>
 
   <!-- MAIN -->
-  <div class="main">
+  <div class="main" id="mainPanel">
     <div class="status-bar"><div class="spin" id="spin"></div><span id="statusTxt">Select sources and generate your briefing.</span></div>
     <div class="action-strip" id="actionStrip" style="display:none">
       <button class="btn-sm speak" id="btnSpeak" onclick="toggleSpeak()">&#9679; Read Aloud</button>
     </div>
+
+    <!-- LOADER -->
+    <div class="loader" id="loader">
+      <div class="loader-progress-rail"><div class="loader-progress-bar" id="loaderBar"></div></div>
+      <div class="loader-logo">The <span>Brief</span></div>
+      <div class="loader-card" id="loaderCard">
+        <div class="loader-type" id="loaderType">PRESS HISTORY</div>
+        <div class="loader-content" id="loaderContent"></div>
+      </div>
+      <div class="loader-status"><div class="lspin"></div><span id="loaderStatusTxt">Searching the web and synthesizing&hellip;</span></div>
+      <div class="loader-quote" id="loaderQuote"></div>
+    </div>
+
     <div id="contentArea">
       <div class="empty">
         <div class="empty-h">Your world,<br>your sources.</div>
@@ -319,12 +381,10 @@ body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-w
   </div>
 </div>
 
-<!-- MASTHEAD FOOTER -->
 <footer class="masthead-footer">
   <div class="masthead-txt">The Brief &mdash; <span>Created by Jesse Rosner</span> &mdash; Powered by Gemini</div>
 </footer>
 
-<!-- SPEAK BAR -->
 <div class="speak-bar" id="speakBar">
   <span class="speak-lbl">&#9679; Reading</span>
   <div class="speak-track"><div class="speak-fill" id="speakFill"></div></div>
@@ -354,6 +414,264 @@ var PROFILES={
   'The Hill':           {lean:'neutral',      desc:'Congress-focused, broadly neutral. Strong on legislative process and Hill sourcing.'},
 };
 
+// ── LOADER CONTENT ──────────────────────────────────────────────────────────
+var FACTS=[
+  'The New York Times has published continuously since 1851 — through two World Wars, the Great Depression, and 9/11.',
+  'AP News was founded in 1846 by five New York newspapers splitting the cost of telegraphing news from the Mexican-American War.',
+  '"Yellow journalism" was named after the Yellow Kid — a comic strip character at the center of the 1890s Hearst-Pulitzer circulation war.',
+  'When Walter Cronkite declared the Vietnam War a stalemate in 1968, LBJ reportedly said: "If I\'ve lost Cronkite, I\'ve lost Middle America."',
+  'The Pentagon Papers were published in 1971 despite a Supreme Court injunction attempt — the case became a landmark for press freedom.',
+  'Benjamin Franklin owned and operated the Pennsylvania Gazette, one of the most influential colonial newspapers in America.',
+  'The Wall Street Journal\'s front-page column-one stories — known as A-heds — have run since 1941 and are famous for quirky, deep-dive narratives.',
+  'Ida Tarbell\'s 1904 investigative series on Standard Oil is considered one of the most consequential pieces of journalism in American history.',
+  'The BBC World Service broadcasts in 42 languages and reaches an estimated 365 million people weekly.',
+  'Reuters was founded in 1851 by Paul Julius Reuter, who initially used carrier pigeons to bridge telegraph gaps between Brussels and Aachen.',
+  'The first American newspaper, Publick Occurrences Both Foreign and Domestick, was shut down after one issue in 1690 for printing without a license.',
+  'Watergate broke in the Washington Post largely because of an anonymous source known only as "Deep Throat" — later revealed to be FBI Deputy Director Mark Felt.',
+  'The term "scoop" in journalism dates to the 1870s and referred to news gathered ahead of rivals — like scooping water before others arrived.',
+  'Al Jazeera launched in 1996 with a $150 million grant from Qatar\'s emir and became the Arab world\'s first 24-hour news channel.',
+  'The Chicago Tribune famously ran the headline "Dewey Defeats Truman" in 1948 — one of the most notorious errors in newspaper history.',
+  'Nellie Bly feigned insanity to expose conditions in a New York asylum in 1887, pioneering what became known as immersive or undercover journalism.',
+  'The term "the press" comes from the printing press — the physical machine that made mass distribution of news possible starting in the 1440s.',
+  'The New Yorker\'s fact-checking department, established in the 1920s, became the gold standard of magazine verification worldwide.',
+  'Rupert Murdoch\'s News Corp owns papers across four continents — the most globally distributed print news empire in history.',
+  'The first transatlantic telegraph cable in 1866 cut the time to transmit news from New York to London from 12 days to minutes.',
+  'Freedom of the press is explicitly protected in 21 of the world\'s constitutions — the US First Amendment being the most influential.',
+  'The Pulitzer Prize was established in 1917 under the will of Joseph Pulitzer, who built the New York World into the country\'s largest paper.',
+];
+
+var TIPS=[
+  'Check the date. Viral stories are often months or years old.',
+  'Find the primary source. Most articles are reporting on another article.',
+  'If a headline ends in a question mark, the answer is usually no.',
+  'Notice what a story doesn\'t say. Omission is as powerful as inclusion.',
+  'A story with no named sources isn\'t journalism — it\'s a rumor with formatting.',
+  '"Both sides" framing can falsely imply equal credibility between positions.',
+  'Photos can be real and still be misleading — context and caption matter enormously.',
+  'Check the byline. Anonymous or absent authorship is a red flag.',
+  'If something makes you furious immediately, pause before sharing.',
+  'Op-eds represent the writer\'s opinion — not the outlet\'s reporting.',
+  'Look for the original data. Charts are easy to manipulate with scale choices.',
+  'Wire stories (AP, Reuters) are republished everywhere — the original source matters.',
+  'Read beyond the headline. Studies show 70% of people share articles they haven\'t read.',
+  'Satire sites exist. Verify the domain before outrage.',
+  'Experts quoted in articles may have undisclosed conflicts of interest — look them up.',
+  'Breaking news is almost always incomplete. Wait for the second-day story.',
+  'The same event covered by five outlets will produce five genuinely different stories.',
+];
+
+var WORDS=[
+  {word:'Epistemic',pron:'eh-pis-TEE-mik',pos:'adjective',def:'Relating to knowledge or the degree of its validation — how we know what we know.',example:'"The senator\'s epistemic humility was rare; she acknowledged what her data couldn\'t prove."'},
+  {word:'Hegemony',pron:'heh-JEM-oh-nee',pos:'noun',def:'Leadership or dominance, especially of one country or social group over others.',example:'"Media hegemony in the 20th century meant a handful of networks shaped national conversation."'},
+  {word:'Polemic',pron:'puh-LEM-ik',pos:'noun',def:'A strong verbal or written attack on someone or something; contentious argument.',example:'"His op-ed read less as analysis and more as polemic — every sentence designed to provoke."'},
+  {word:'Verisimilitude',pron:'veh-rih-sih-MIL-ih-tood',pos:'noun',def:'The appearance of being true or real; convincing authenticity.',example:'"The fabricated quotes had enough verisimilitude that editors missed them for weeks."'},
+  {word:'Solipsism',pron:'SOL-ip-siz-um',pos:'noun',def:'The view that only one\'s own mind is certain to exist; extreme self-centeredness.',example:'"Algorithmic feeds can create a kind of epistemic solipsism — reinforcing only what you already believe."'},
+  {word:'Obfuscate',pron:'OB-fus-kayt',pos:'verb',def:'To render obscure, unclear, or unintelligible; to deliberately confuse.',example:'"The press release was designed to obfuscate rather than inform — 400 words saying almost nothing."'},
+  {word:'Anachronism',pron:'ah-NAK-roh-niz-um',pos:'noun',def:'A thing belonging to a period other than that in which it exists — out of its proper time.',example:'"Print subscription as a primary revenue model feels like an anachronism in the streaming era."'},
+  {word:'Tendentious',pron:'ten-DEN-shus',pos:'adjective',def:'Promoting a particular cause or point of view; having an ulterior motive.',example:'"The coverage was tendentious — selectively quoting data to support a predetermined conclusion."'},
+  {word:'Realpolitik',pron:'ray-AHL-po-li-teek',pos:'noun',def:'Politics based on practical and material factors rather than moral or ideological considerations.',example:'"The alliance surprised idealists but made sense through the lens of Realpolitik."'},
+  {word:'Zeitgeist',pron:'ZYTE-gyst',pos:'noun',def:'The defining spirit or mood of a particular period of history.',example:'"The paper\'s front page captured the zeitgeist perfectly — anxious, fragmented, and searching."'},
+  {word:'Casuistry',pron:'KAZ-yoo-is-tree',pos:'noun',def:'The use of clever but unsound reasoning, especially in ethical matters; sophistry.',example:'"His defense of the story\'s sourcing was pure casuistry — technically defensible, morally hollow."'},
+  {word:'Lacuna',pron:'lah-KYU-nah',pos:'noun',def:'A gap or missing portion; an unfilled space.',example:'"The report\'s most damning lacuna was what it chose not to investigate."'},
+  {word:'Propinquity',pron:'pro-PINK-kwi-tee',pos:'noun',def:'Nearness in space, time, or relationship; proximity that breeds familiarity.',example:'"The propinquity of reporters and sources creates an uncomfortable closeness that can compromise coverage."'},
+  {word:'Dogma',pron:'DOG-mah',pos:'noun',def:'A principle or set of principles laid down by an authority as incontrovertibly true.',example:'"Objectivity became editorial dogma — often more honored in its breach than its practice."'},
+  {word:'Exigent',pron:'EK-sih-jent',pos:'adjective',def:'Requiring immediate action or aid; urgent; pressing.',example:'"The exigent circumstances of the breaking story overrode the usual verification protocols."'},
+  {word:'Apocryphal',pron:'ah-POK-rih-ful',pos:'adjective',def:'Of doubtful authenticity; widely circulated but likely false.',example:'"The quote was almost certainly apocryphal — but it had been repeated so often it had taken on a life of its own."'},
+  {word:'Probity',pron:'PRO-bih-tee',pos:'noun',def:'The quality of having strong moral principles; complete honesty and integrity.',example:'"The editor\'s reputation for probity made the correction all the more surprising."'},
+  {word:'Heuristic',pron:'hyoo-RIS-tik',pos:'noun',def:'A problem-solving approach that uses practical methods not guaranteed to be perfect but sufficient for immediate goals.',example:'"Readers develop media heuristics — quick rules of thumb for deciding what to trust."'},
+  {word:'Sycophant',pron:'SIK-oh-fant',pos:'noun',def:'A person who acts obsequiously toward someone powerful in order to gain advantage.',example:'"The press conference degenerated into sycophancy — no hard questions, only softballs."'},
+  {word:'Imprimatur',pron:'im-prih-MAH-tur',pos:'noun',def:'Official approval; an authoritative declaration of permission or endorsement.',example:'"Publishing in the Times gave the research an imprimatur that shaped how policymakers received it."'},
+];
+
+var QUOTES=[
+  '"We are not afraid to entrust the American people with unpleasant facts, foreign ideas, alien philosophies, and competitive values." — JFK',
+  '"The press is the best instrument for enlightening the mind of man." — Thomas Jefferson',
+  '"Journalism is printing what someone else does not want printed. Everything else is public relations." — George Orwell',
+  '"To be a good journalist, you have to be curious, a little bit cynical, and totally honest." — Ed Bradley',
+  '"In the long run, the public interest requires that journalism be both accurate and fair." — Walter Cronkite',
+];
+
+var JOURNALISM_QUOTES=QUOTES;
+
+// ── LOADER LOGIC ─────────────────────────────────────────────────────────────
+var loaderInterval=null, loaderBarAnim=null, loaderStep=0, quoteIdx=0;
+
+function shuffle(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+
+var shuffledFacts=shuffle(FACTS);
+var shuffledTips=shuffle(TIPS);
+var shuffledWords=shuffle(WORDS);
+var factIdx=0,tipIdx=0,wordIdx=0;
+
+function showLoader(statusEl){
+  document.getElementById('loader').classList.add('on');
+  document.getElementById('contentArea').style.display='none';
+
+  // Progress bar — slow fill over ~22s
+  var bar=document.getElementById('loaderBar');
+  bar.style.animation='none';bar.style.width='0%';
+  setTimeout(function(){bar.style.transition='width 22s cubic-bezier(.1,.05,.3,1)';bar.style.width='92%';},50);
+
+  // Quotes rotation
+  quoteIdx=0;
+  document.getElementById('loaderQuote').textContent=JOURNALISM_QUOTES[0];
+
+  // Content cycle every 4s
+  renderLoaderCard();
+  loaderInterval=setInterval(function(){
+    loaderStep++;
+    quoteIdx=(quoteIdx+1)%JOURNALISM_QUOTES.length;
+    document.getElementById('loaderQuote').textContent=JOURNALISM_QUOTES[quoteIdx];
+    renderLoaderCard();
+  },4000);
+}
+
+function renderLoaderCard(){
+  var type=loaderStep%3; // 0=fact, 1=tip, 2=word
+  var typeEl=document.getElementById('loaderType');
+  var contentEl=document.getElementById('loaderContent');
+  contentEl.className='loader-content loader-fade';
+
+  if(type===0){
+    typeEl.textContent='PRESS HISTORY';
+    var fact=shuffledFacts[factIdx%shuffledFacts.length];factIdx++;
+    contentEl.innerHTML='<div class="loader-fact">&#8220;'+fact+'&#8221;</div>';
+  } else if(type===1){
+    typeEl.textContent='MEDIA LITERACY';
+    var tip=shuffledTips[tipIdx%shuffledTips.length];tipIdx++;
+    contentEl.innerHTML='<div class="loader-tip-label">Tip</div><div class="loader-tip">'+tip+'</div>';
+  } else {
+    typeEl.textContent='WORD OF THE DAY';
+    var w=shuffledWords[wordIdx%shuffledWords.length];wordIdx++;
+    contentEl.innerHTML='<div class="loader-word">'+w.word+'</div>'
+      +'<div class="loader-pron">'+w.pron+'</div>'
+      +'<div class="loader-pos">'+w.pos+'</div>'
+      +'<div class="loader-def">'+w.def+'</div>'
+      +'<div class="loader-example">'+w.example+'</div>';
+  }
+  // Re-trigger animation
+  void contentEl.offsetWidth;
+  contentEl.className='loader-content loader-fade';
+}
+
+function hideLoader(){
+  clearInterval(loaderInterval);loaderInterval=null;
+  var bar=document.getElementById('loaderBar');
+  bar.style.transition='width .4s ease';bar.style.width='100%';
+  setTimeout(function(){
+    document.getElementById('loader').classList.remove('on');
+    document.getElementById('contentArea').style.display='';
+    bar.style.transition='none';bar.style.width='0%';
+  },400);
+}
+
+// ── PERSISTENT KEY ───────────────────────────────────────────────────────────
+function saveKey(val){try{localStorage.setItem('brief_gemini_key',val);}catch(e){}}
+function clearKey(){
+  try{localStorage.removeItem('brief_gemini_key');}catch(e){}
+  document.getElementById('apiKey').value='';
+}
+(function loadKey(){
+  try{
+    var k=localStorage.getItem('brief_gemini_key');
+    if(k) document.getElementById('apiKey').value=k;
+  }catch(e){}
+})();
+
+// ── EMAIL PERSISTENCE ─────────────────────────────────────────────────────────
+function saveEmail(){
+  try{
+    localStorage.setItem('brief_email',document.getElementById('emailAddr').value);
+    localStorage.setItem('brief_time',document.getElementById('deliveryTime').value);
+    localStorage.setItem('brief_email_on',document.getElementById('optEmail').classList.contains('on')?'1':'0');
+  }catch(e){}
+  updateEmailStatus();
+}
+function saveEjs(){
+  try{
+    localStorage.setItem('brief_ejs_service',document.getElementById('ejsService').value);
+    localStorage.setItem('brief_ejs_template',document.getElementById('ejsTemplate').value);
+    localStorage.setItem('brief_ejs_pubkey',document.getElementById('ejsPubkey').value);
+  }catch(e){}
+}
+function updateEmailStatus(){
+  var on=document.getElementById('optEmail').classList.contains('on');
+  var hr=document.getElementById('deliveryTime').value;
+  var ampm=parseInt(hr)<12?'AM':'PM';
+  var h=parseInt(hr)>12?parseInt(hr)-12:parseInt(hr);
+  document.getElementById('emailScheduleStatus').textContent=on?('Scheduled: '+h+':00 '+ampm+' daily'):'Tap to activate';
+  var lastSent=localStorage.getItem('brief_last_sent')||'';
+  var st=document.getElementById('emailStatus');
+  if(lastSent){
+    var d=new Date(lastSent);
+    st.textContent='Last sent: '+d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' at '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  }
+}
+(function loadEmail(){
+  try{
+    var e=localStorage.getItem('brief_email');if(e)document.getElementById('emailAddr').value=e;
+    var t=localStorage.getItem('brief_time');if(t)document.getElementById('deliveryTime').value=t;
+    var on=localStorage.getItem('brief_email_on');if(on==='1')document.getElementById('optEmail').classList.add('on');
+    var s=localStorage.getItem('brief_ejs_service');if(s)document.getElementById('ejsService').value=s;
+    var tp=localStorage.getItem('brief_ejs_template');if(tp)document.getElementById('ejsTemplate').value=tp;
+    var pk=localStorage.getItem('brief_ejs_pubkey');if(pk)document.getElementById('ejsPubkey').value=pk;
+  }catch(e){}
+  updateEmailStatus();
+})();
+
+function toggleEjsSetup(){
+  document.getElementById('ejsSetup').classList.toggle('open');
+}
+
+async function sendEmail(){
+  var toEmail=document.getElementById('emailAddr').value.trim();
+  var svcId=document.getElementById('ejsService').value.trim();
+  var tplId=document.getElementById('ejsTemplate').value.trim();
+  var pubKey=document.getElementById('ejsPubkey').value.trim();
+  var st=document.getElementById('emailStatus');
+  if(!toEmail){st.textContent='Enter an email address first.';return;}
+  if(!svcId||!tplId||!pubKey){st.textContent='Complete EmailJS setup first.';toggleEjsSetup();return;}
+  if(!briefText){st.textContent='Generate a briefing first.';return;}
+  st.textContent='Sending\u2026';
+  try{
+    await emailjs.send(svcId,tplId,{
+      to_email:toEmail,
+      date:fmtDate(),
+      briefing_content:briefText.slice(0,8000)
+    },pubKey);
+    st.textContent='Sent! Check your inbox.';
+    try{localStorage.setItem('brief_last_sent',new Date().toISOString());}catch(e){}
+    updateEmailStatus();
+  }catch(e){
+    st.textContent='Failed: '+(e.text||e.message||'Check your EmailJS credentials.');
+  }
+}
+
+// Auto-send check on page load
+(function checkAutoSend(){
+  try{
+    var on=localStorage.getItem('brief_email_on')==='1';
+    if(!on)return;
+    var hr=parseInt(localStorage.getItem('brief_time')||'7');
+    var now=new Date();
+    if(now.getHours()<hr)return;
+    var last=localStorage.getItem('brief_last_sent');
+    if(last){
+      var lastDate=new Date(last);
+      if(lastDate.toDateString()===now.toDateString())return; // already sent today
+    }
+    // Auto-generate + send
+    setTimeout(function(){
+      if(getSel().length>=2) generate(true);
+    },1500);
+  }catch(e){}
+})();
+
+// ── UTIL ─────────────────────────────────────────────────────────────────────
 function lc(src){
   var p=PROFILES[src];if(!p)return 'var(--muted)';
   if(p.lean==='left'||p.lean==='center-left')return 'var(--l-l)';
@@ -363,100 +681,42 @@ function lc(src){
   return 'var(--l-n)';
 }
 
-// ── STATE ───────────────────────────────────────────────────────────────────
 var briefText='',isSpeaking=false,utt=null;
-
 function fmtDate(){return new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
 function fmtShort(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 document.getElementById('topDate').textContent=fmtShort().toUpperCase()+' \u00B7 MORNING EDITION';
 
-// ── DRAWER (mobile) ─────────────────────────────────────────────────────────
-function toggleDrawer(){
-  var sb=document.getElementById('sidebar');
-  var ov=document.getElementById('drawerOverlay');
-  var open=sb.classList.toggle('open');
-  ov.classList.toggle('on',open);
-}
-function closeDrawer(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('drawerOverlay').classList.remove('on');
-}
-
-// ── TOGGLES ─────────────────────────────────────────────────────────────────
+function toggleDrawer(){var sb=document.getElementById('sidebar'),ov=document.getElementById('drawerOverlay'),open=sb.classList.toggle('open');ov.classList.toggle('on',open);}
+function closeDrawer(){document.getElementById('sidebar').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('on');}
 function toggleSrc(el){el.classList.toggle('on');updateN();}
 function toggleOpt(el){el.classList.toggle('on');}
 function getSel(){return Array.from(document.querySelectorAll('.src-row.on')).map(function(e){return e.dataset.src;});}
 function optOn(id){return document.getElementById(id).classList.contains('on');}
-function updateN(){
-  var n=getSel().length;
-  document.getElementById('selN').textContent=n;
-  document.getElementById('btnGen').disabled=n<2;
-}
+function updateN(){var n=getSel().length;document.getElementById('selN').textContent=n;document.getElementById('btnGen').disabled=n<2;}
 updateN();
 
-// ── PROMPT BUILDER ──────────────────────────────────────────────────────────
+// ── PROMPT ───────────────────────────────────────────────────────────────────
 function buildPrompt(srcs){
   var today=fmtDate(),n=srcs.length;
-  var wantSummary=optOn('optSummary');
-  var wantGoodNews=optOn('optGoodNews');
-
-  var profiles=srcs.map(function(s){
-    var p=PROFILES[s]||{lean:'unknown',desc:'General news outlet.'};
-    return '- '+s+' ['+p.lean.toUpperCase()+']: '+p.desc;
-  }).join('\n');
-
+  var profiles=srcs.map(function(s){var p=PROFILES[s]||{lean:'unknown',desc:'General news outlet.'};return '- '+s+' ['+p.lean.toUpperCase()+']: '+p.desc;}).join('\n');
   var synthInstr;
   if(n<=3) synthInstr='Run direct pairwise comparisons. Explicitly name which outlet leads with which angle and note any story one outlet ran that another ignored.';
-  else if(n<=6) synthInstr='Group sources by editorial family (left-leaning, right-leaning, neutral, financial) and compare families. Surface consensus view vs. outlier takes.';
-  else synthInstr='Identify the dominant narrative across the majority of outlets, then flag any outlet whose framing differs significantly. Flag stories only covered by politically-aligned outlets as potentially agenda-driven.';
-
-  var summaryInstr=wantSummary
-    ? 'BEFORE the first SECTION block, output a bullet summary of all stories in this exact format:\n\nSUMMARY:\n- [One crisp sentence per major story, maximum 12 words each, listing all 4-5 stories]\n\n'
-    : '';
-
-  var goodNewsInstr=wantGoodNews
-    ? '\nAFTER the CLOSING block, output one positive or uplifting story in this exact format:\n\nGOODNEWS_HEADLINE: [An original uplifting headline]\nGOODNEWS_BODY: [2 short paragraphs about a genuinely positive, feel-good news story from today — scientific breakthrough, human achievement, community triumph, or heartwarming event. Keep it real and grounded, not saccharine.]\n'
-    : '';
-
-  return 'Today is '+today+'. You are a senior editor at a world-class nonpartisan news organization producing a morning briefing.\n\n'
-    +'The user has selected '+n+' source'+(n!==1?'s':'')+' with these editorial profiles:\n\n'
-    +profiles+'\n\n'
-    +'STEP 1 \u2014 SEARCH: Use Google Search to find today\'s top news stories. Search for current headlines and breaking news to ground your briefing in real events happening today.\n\n'
-    +'STEP 2 \u2014 EDITORIAL LENSES: Apply each outlet\'s profile to analyze how they would frame each story differently. Use your knowledge of these outlets\' perspectives to characterize divergence.\n\n'
-    +'STEP 3 \u2014 SYNTHESIZE: '+synthInstr+'\n\n'
-    +'STEP 4 \u2014 OUTPUT in EXACTLY this structure:\n\n'
-    +summaryInstr
-    +'For each of 4-5 major story clusters:\n\n'
-    +'SECTION: [3-5 word topic label]\n'
-    +'HEADLINE: [Your original, specific headline \u2014 not copied from any source]\n'
-    +'BODY: [Three paragraphs:\n'
-    +'  P1 \u2014 Core facts: what happened, agreed-upon baseline.\n'
-    +'  P2 \u2014 Editorial divergence: how do the selected outlets frame this differently? Who reads it politically, economically, humanistically? Who is silent?\n'
-    +'  P3 \u2014 Stakes and context: why does this matter? What to watch next?]\n'
-    +'SOURCES: [Comma-separated list of which selected sources would cover this]\n\n'
-    +'Then:\n'
-    +'CLOSING: [2-3 sentences. Name the most consequential story. Flag any story only right-leaning or only left-leaning outlets would cover \u2014 label it a potential agenda item.]\n'
-    +goodNewsInstr+'\n'
-    +'RULES: No padding. No weasel words ("some say", "it is believed"). Merge duplicate stories. Hard news first. Never present opinion as reporting.';
+  else if(n<=6) synthInstr='Group by editorial family and compare families. Surface consensus vs. outlier takes.';
+  else synthInstr='Identify the dominant narrative, then flag outliers. Flag stories only politically-aligned outlets cover as potentially agenda-driven.';
+  var summaryInstr=optOn('optSummary')?'BEFORE the first SECTION block output:\n\nSUMMARY:\n- [One crisp sentence per major story, max 12 words each]\n\n':'';
+  var goodNewsInstr=optOn('optGoodNews')?'\nAFTER CLOSING output:\n\nGOODNEWS_HEADLINE: [Original uplifting headline]\nGOODNEWS_BODY: [2 short paragraphs — real positive story: breakthrough, achievement, triumph. Grounded not saccharine.]\n':'';
+  return 'Today is '+today+'. You are a senior editor at a world-class nonpartisan news organization.\n\nSelected sources:\n\n'+profiles+'\n\nSTEP 1 — SEARCH: Use Google Search to find today\'s top news stories.\nSTEP 2 — APPLY EDITORIAL LENSES: Use each outlet\'s profile to characterize how they would frame each story.\nSTEP 3 — SYNTHESIZE: '+synthInstr+'\nSTEP 4 — OUTPUT:\n\n'+summaryInstr+'For each of 4-5 story clusters:\n\nSECTION: [3-5 word topic label]\nHEADLINE: [Original specific headline]\nBODY: [P1 — Core facts. P2 — Editorial divergence. P3 — Stakes and context.]\nSOURCES: [Which selected outlets cover this]\n\nCLOSING: [2-3 sentences. Most consequential story. Flag single-lean stories as agenda items.]\n'+goodNewsInstr+'\nRULES: No padding. No weasel words. Merge duplicates. Hard news first.';
 }
 
-// ── GEMINI CALL ─────────────────────────────────────────────────────────────
-async function callGemini(prompt,onStatus){
+// ── GEMINI ───────────────────────────────────────────────────────────────────
+async function callGemini(prompt){
   var key=document.getElementById('apiKey').value.trim();
-  if(!key) throw new Error('No API key \u2014 paste your Gemini key in the top bar. Get one free at aistudio.google.com/apikey');
-  onStatus('Searching the web and synthesizing\u2026');
+  if(!key) throw new Error('No API key — paste your Gemini key in the top bar. Get one free at aistudio.google.com/apikey');
   var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+key,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      contents:[{parts:[{text:prompt}]}],
-      tools:[{googleSearch:{}}]
-    })
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{googleSearch:{}}]})
   });
-  if(!res.ok){
-    var err=await res.json().catch(function(){return{};});
-    throw new Error((err.error&&err.error.message)||('API error '+res.status));
-  }
+  if(!res.ok){var err=await res.json().catch(function(){return{};});throw new Error((err.error&&err.error.message)||('API error '+res.status));}
   var data=await res.json();
   var parts=(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[];
   var text=parts.filter(function(p){return p.text;}).map(function(p){return p.text;}).join('\n');
@@ -464,23 +724,28 @@ async function callGemini(prompt,onStatus){
   return text;
 }
 
-// ── GENERATE ────────────────────────────────────────────────────────────────
-async function generate(){
+// ── GENERATE ─────────────────────────────────────────────────────────────────
+async function generate(autoSend){
   var srcs=getSel();
   if(srcs.length<2){alert('Select at least 2 sources.');return;}
   closeDrawer();
   var btn=document.getElementById('btnGen'),spin=document.getElementById('spin'),
       st=document.getElementById('statusTxt'),as=document.getElementById('actionStrip');
   btn.disabled=true;spin.classList.add('on');as.style.display='none';
-  st.textContent='Searching the web and synthesizing\u2026';
-  document.getElementById('contentArea').innerHTML='';briefText='';
+  st.textContent='Generating\u2026';
+  showLoader();
+  briefText='';
   try{
-    var text=await callGemini(buildPrompt(srcs),function(msg){st.textContent=msg;});
+    var text=await callGemini(buildPrompt(srcs));
+    hideLoader();
     st.textContent='Briefing ready \u2014 '+srcs.length+' sources \u00B7 '+fmtShort();
     spin.classList.remove('on');
     render(text,srcs);
     as.style.display='flex';
+    document.getElementById('btnSend').disabled=false;
+    if(autoSend) setTimeout(sendEmail,1000);
   }catch(e){
+    hideLoader();
     st.textContent='Error: '+e.message;
     spin.classList.remove('on');
   }
@@ -493,90 +758,70 @@ function render(text,srcs){
   var area=document.getElementById('contentArea');
   area.innerHTML='';
   var wrap=document.createElement('div');wrap.className='content';
-
-  // Source chips
   var chips=srcs.map(function(s){return '<span class="chip" style="color:'+lc(s)+';border-color:'+lc(s)+'44">'+s+'</span>';}).join('');
   wrap.innerHTML='<div class="brief-meta"><span class="brief-date">'+fmtDate()+'</span><div class="src-chips">'+chips+'</div></div>';
-
-  // Normalize
   var t=text.replace(/\r\n/g,'\n').replace(/\*\*/g,'').replace(/\*/g,'').replace(/#+\s*/g,'');
 
-  // ── SUMMARY BLOCK ──
+  // Summary
   var sumMatch=t.match(/SUMMARY:\s*([\s\S]+?)(?=\nSECTION:|$)/);
   if(sumMatch){
     var bullets=sumMatch[1].trim().split('\n').filter(function(l){return l.trim().replace(/^[-\u2014\u2013\u2022]\s*/,'').length>5;});
-    if(bullets.length>0){
+    if(bullets.length){
       var liHtml=bullets.map(function(b){return '<li>'+b.replace(/^[-\u2014\u2013\u2022]\s*/,'').trim()+'</li>';}).join('');
-      wrap.innerHTML+='<div class="summary-block" style="animation-delay:0s"><div class="summary-lbl">Today at a glance</div><ul class="summary-list">'+liHtml+'</ul></div>';
+      wrap.innerHTML+='<div class="summary-block"><div class="summary-lbl">Today at a glance</div><ul class="summary-list">'+liHtml+'</ul></div>';
     }
   }
 
-  // ── PARSE SECTIONS ──
+  // Sections
   var sections=[];
   var sReg=/SECTION:\s*([^\n]+)\s*\nHEADLINE:\s*([^\n]+)\s*\nBODY:\s*([\s\S]+?)(?=\nSOURCES:)[\s\S]*?SOURCES:\s*([^\n]+)/gm;
   var m;
   while((m=sReg.exec(t))!==null) sections.push({topic:m[1].trim(),hed:m[2].trim(),body:m[3].trim(),srcs:m[4].trim()});
-
-  // Fallback splitter
   if(sections.length===0){
     t.split(/(?=SECTION:)/).forEach(function(chunk){
       if(!chunk.trim())return;
-      var tp=chunk.match(/SECTION:\s*([^\n]+)/);
-      var hl=chunk.match(/HEADLINE:\s*([^\n]+)/);
-      var bd=chunk.match(/BODY:\s*([\s\S]+?)(?=SOURCES:|$)/);
-      var sr=chunk.match(/SOURCES:\s*([^\n]+)/);
+      var tp=chunk.match(/SECTION:\s*([^\n]+)/),hl=chunk.match(/HEADLINE:\s*([^\n]+)/),
+          bd=chunk.match(/BODY:\s*([\s\S]+?)(?=SOURCES:|$)/),sr=chunk.match(/SOURCES:\s*([^\n]+)/);
       if(tp&&hl&&bd) sections.push({topic:tp[1].trim(),hed:hl[1].trim(),body:bd[1].trim(),srcs:sr?sr[1].trim():srcs.join(', ')});
     });
   }
 
-  // Render sections
   if(sections.length===0){
-    // Last resort: style labeled lines
     var paras=t.split('\n\n').filter(function(p){return p.trim().length>10;});
     paras.forEach(function(p,i){
       p=p.trim();
-      if(/^SECTION:/.test(p)) wrap.innerHTML+='<div class="story-topic" style="animation:fadeUp .4s ease both;animation-delay:'+(i*.05)+'s">'+p.replace(/^SECTION:\s*/,'')+'</div>';
-      else if(/^HEADLINE:/.test(p)) wrap.innerHTML+='<div class="story-hed" style="animation:fadeUp .4s ease both;animation-delay:'+(i*.05)+'s">'+p.replace(/^HEADLINE:\s*/,'')+'</div>';
+      if(/^SECTION:/.test(p)) wrap.innerHTML+='<div class="story-topic">'+p.replace(/^SECTION:\s*/,'')+'</div>';
+      else if(/^HEADLINE:/.test(p)) wrap.innerHTML+='<div class="story-hed">'+p.replace(/^HEADLINE:\s*/,'')+'</div>';
       else if(/^CLOSING:/.test(p)){var c=p.replace(/^CLOSING:\s*/,'');wrap.innerHTML+='<div class="closing"><div class="closing-lbl">Editor\'s Note</div><div class="closing-txt">'+c+'</div></div>';briefText+=c+' ';}
-      else if(/^SOURCES:/.test(p)){var pills=p.replace(/^SOURCES:\s*/,'').split(',').map(function(x){return '<span class="story-src">'+x.trim()+'</span>';}).join('');wrap.innerHTML+='<div class="story-srcs" style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)">'+pills+'</div>';}
-      else{wrap.innerHTML+='<div class="story-body" style="animation:fadeUp .4s ease both;animation-delay:'+(i*.05)+'s;margin-bottom:16px"><p>'+p+'</p></div>';briefText+=p+' ';}
+      else if(/^SOURCES:/.test(p)){var pills=p.replace(/^SOURCES:\s*/,'').split(',').map(function(x){return '<span class="story-src">'+x.trim()+'</span>';}).join('');wrap.innerHTML+='<div class="story-srcs" style="margin-bottom:24px">'+pills+'</div>';}
+      else{wrap.innerHTML+='<div class="story-body" style="margin-bottom:16px"><p>'+p+'</p></div>';briefText+=p+' ';}
     });
   } else {
     sections.forEach(function(s,i){
-      var srcList=s.srcs.split(',').map(function(x){return x.trim();});
-      var srcPills=srcList.map(function(x){return '<span class="story-src">'+x+'</span>';}).join('');
-      var bodyClean=s.body.replace(/P[123]\s*[\u2014\-]\s*/gi,'').replace(/Paragraph [123][\s\:]+/gi,'');
-      var bodyParas=bodyClean.split(/\n\n+/).filter(function(p){return p.trim().length>10;});
-      var bodyHtml=bodyParas.length>0
-        ? bodyParas.map(function(p){return '<p>'+p.trim()+'</p>';}).join('')
-        : '<p>'+bodyClean.trim()+'</p>';
+      var srcPills=s.srcs.split(',').map(function(x){return '<span class="story-src">'+x.trim()+'</span>';}).join('');
+      var bc=s.body.replace(/P[123]\s*[\u2014\-]\s*/gi,'').replace(/Paragraph [123][\s:]+/gi,'');
+      var bp=bc.split(/\n\n+/).filter(function(p){return p.trim().length>10;});
+      var bh=bp.length?bp.map(function(p){return '<p>'+p.trim()+'</p>';}).join(''):'<p>'+bc.trim()+'</p>';
       wrap.innerHTML+='<div class="story" style="animation-delay:'+(i*.08)+'s">'
         +'<div class="story-number">'+String(i+1).padStart(2,'0')+'</div>'
         +'<div class="story-topic">'+s.topic+'</div>'
         +'<div class="story-hed">'+s.hed+'</div>'
-        +'<div class="story-body">'+bodyHtml+'</div>'
+        +'<div class="story-body">'+bh+'</div>'
         +'<div class="story-srcs">'+srcPills+'</div></div>';
-      briefText+=s.topic+'. '+s.hed+'. '+bodyClean+'\n\n';
+      briefText+=s.topic+'. '+s.hed+'. '+bc+'\n\n';
     });
   }
 
-  // ── CLOSING ──
+  // Closing
   var cm=t.match(/CLOSING:\s*([\s\S]+?)(?=\nGOODNEWS_HEADLINE:|$)/);
-  if(cm){
-    var ct=cm[1].trim().replace(/P[123]\s*[\u2014\-]\s*/gi,'');
-    wrap.innerHTML+='<div class="closing" style="animation-delay:'+(sections.length*.08)+'s"><div class="closing-lbl">Editor\'s Note</div><div class="closing-txt">'+ct+'</div></div>';
-    briefText+=ct;
-  }
+  if(cm){var ct=cm[1].trim().replace(/P[123]\s*[\u2014\-]\s*/gi,'');wrap.innerHTML+='<div class="closing" style="animation-delay:'+(sections.length*.08)+'s"><div class="closing-lbl">Editor\'s Note</div><div class="closing-txt">'+ct+'</div></div>';briefText+=ct;}
 
-  // ── GOOD NEWS BLOCK ──
+  // Good news
   var gnH=t.match(/GOODNEWS_HEADLINE:\s*([^\n]+)/);
   var gnB=t.match(/GOODNEWS_BODY:\s*([\s\S]+?)$/);
   if(gnH&&gnB){
     var gnBody=gnB[1].trim().split(/\n\n+/).filter(function(p){return p.trim();}).map(function(p){return '<p>'+p.trim()+'</p>';}).join('');
-    wrap.innerHTML+='<div class="goodnews-block" style="animation-delay:'+((sections.length+1)*.08)+'s">'
-      +'<div class="goodnews-lbl">Something good</div>'
-      +'<div class="goodnews-hed">'+gnH[1].trim()+'</div>'
-      +'<div class="goodnews-body">'+gnBody+'</div></div>';
+    wrap.innerHTML+='<div class="goodnews-block" style="animation-delay:'+((sections.length+1)*.08)+'s"><div class="goodnews-lbl">Something good</div><div class="goodnews-hed">'+gnH[1].trim()+'</div><div class="goodnews-body">'+gnBody+'</div></div>';
     briefText+=gnH[1].trim()+'. '+gnB[1].trim();
   }
 
@@ -594,15 +839,10 @@ function toggleSpeak(){
   utt=new SpeechSynthesisUtterance('Good morning. Here is your briefing for '+fmtDate()+'. '+briefText);
   utt.rate=0.93;
   var prog=0,dur=(briefText.length/14)*1000;
-  var iv=setInterval(function(){
-    if(!isSpeaking){clearInterval(iv);return;}
-    prog=Math.min(97,prog+(100/(dur/250)));
-    document.getElementById('speakFill').style.width=prog+'%';
-  },250);
+  var iv=setInterval(function(){if(!isSpeaking){clearInterval(iv);return;}prog=Math.min(97,prog+(100/(dur/250)));document.getElementById('speakFill').style.width=prog+'%';},250);
   utt.onend=function(){clearInterval(iv);document.getElementById('speakFill').style.width='100%';setTimeout(stopSpeak,600);};
   window.speechSynthesis.speak(utt);
 }
-
 function stopSpeak(){
   isSpeaking=false;window.speechSynthesis.cancel();
   document.getElementById('speakBar').classList.remove('on');
