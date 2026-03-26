@@ -511,10 +511,10 @@ function showLoader(statusEl){
   document.getElementById('loader').classList.add('on');
   document.getElementById('contentArea').style.display='none';
 
-  // Progress bar — slow fill over ~22s
+  // Progress bar — slow fill over ~45s
   var bar=document.getElementById('loaderBar');
   bar.style.animation='none';bar.style.width='0%';
-  setTimeout(function(){bar.style.transition='width 22s cubic-bezier(.1,.05,.3,1)';bar.style.width='92%';},50);
+  setTimeout(function(){bar.style.transition='width 45s cubic-bezier(.1,.05,.3,1)';bar.style.width='92%';},50);
 
   // Quotes rotation
   quoteIdx=0;
@@ -527,7 +527,7 @@ function showLoader(statusEl){
     quoteIdx=(quoteIdx+1)%JOURNALISM_QUOTES.length;
     document.getElementById('loaderQuote').textContent=JOURNALISM_QUOTES[quoteIdx];
     renderLoaderCard();
-  },4000);
+  },9000);
 }
 
 function renderLoaderCard(){
